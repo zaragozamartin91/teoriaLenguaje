@@ -22,7 +22,7 @@ readCommand =
 runCommand :: D.PeopleMap -> CommandInput -> IO D.PeopleMap
 runCommand peopleMap (CommandInput "help" _) = help >> return peopleMap
 runCommand peopleMap (CommandInput "menu" _) = printMenu >> return peopleMap
-runCommand peopleMap (CommandInput "add" args) = return $ add peopleMap args
+runCommand peopleMap (CommandInput "add" args) = putStrLn ("Agregando: " ++ show args) >> add peopleMap args
 runCommand peopleMap (CommandInput c _) = ioError . userError $ ("Comando " ++ c ++ " no reconocido!")
 
 
@@ -35,11 +35,16 @@ help :: IO ()
 help = 
     putStrLn "Comandos: " >>
     putStrLn "help: Imprime este menu de ayuda" >> 
-    putStrLn "menu: Imprime el menu principal" 
+    putStrLn "menu: Imprime el menu principal" >>
+    putStrLn "add: Agregar persona"
 
-add :: D.PeopleMap -> [CommandArg] -> D.PeopleMap
-add peopleMap args = let 
+add :: D.PeopleMap -> [CommandArg] -> IO D.PeopleMap
+add peopleMap args@[u, e, b] = let 
     parsedPerson = D.parsePerson args
     personUsername = D.username parsedPerson in
-    Map.insert personUsername parsedPerson peopleMap
+    return $ Map.insert personUsername parsedPerson peopleMap
+add _ args = ioError . userError $ ("Error al ingresar persona: " ++ (show args))
+
+get :: D.PeopleMap -> D.Username -> Maybe D.Person
+get peopleMap usrName = Map.lookup usrName peopleMap
 

@@ -17,4 +17,3 @@ type PeopleMap = Map.Map Username Person
 
 parsePerson :: [String] -> Person
 parsePerson [username, email, birth] = Person username email birth
-parsePerson _ = throw NotEnoughDataException
