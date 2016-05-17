@@ -14,7 +14,7 @@ mainLoop peopleMap =
     
 
 handleError :: IOError -> IO ()
-handleError err = putStrLn $ "Ocurrio un error: " ++ (show err)
+handleError err = putStrLn $ "Error: " ++ (show err)
 
 
 main:: IO ()
