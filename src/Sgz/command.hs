@@ -4,6 +4,10 @@ import Control.Monad
 import qualified Data.Map as Map
 import qualified Data.List.Split as S
 import qualified Sgz.Data as D
+import System.IO
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Vector as V
+import qualified Data.Csv as Csv
 
 type CommandId = String
 type CommandAction = IO ()
@@ -25,6 +29,8 @@ runCommand peopleMap (CommandInput "add" []) = ioError . userError $ ("Se debe i
 runCommand peopleMap (CommandInput "add" args) = putStrLn ("Agregando: " ++ show args) >> add peopleMap args
 runCommand peopleMap (CommandInput "get" []) = ioError . userError $ ("No se ingreso nombre de usuario!")
 runCommand peopleMap (CommandInput "get" (usrName:_)) = get peopleMap usrName
+runCommand peopleMap (CommandInput "load" []) = ioError . userError $ ("Se debe ingresar el path del archivo!")
+runCommand peopleMap (CommandInput "load" filePath) = load peopleMap filePath
 runCommand peopleMap (CommandInput c _) = ioError . userError $ ("Comando " ++ c ++ " no reconocido!")
 
 
@@ -32,6 +38,7 @@ printMenu :: IO ()
 printMenu = 
     putStrLn "Bienvenido al registro de personas." >> 
     putStrLn "Guarde y recupere datos sobre individuos."
+
 
 help :: IO ()
 help = 
@@ -41,12 +48,14 @@ help =
     putStrLn "add: Agregar persona" >> 
     putStrLn "get: Buscar persona"
 
+
 add :: D.PeopleMap -> [CommandArg] -> IO D.PeopleMap
 add peopleMap args@[u, e, b] = let 
     parsedPerson = D.parsePerson args
     personUsername = D.username parsedPerson in
     return $ Map.insert personUsername parsedPerson peopleMap
 add _ args = ioError . userError $ ("Error al ingresar persona: " ++ (show args))
+
 
 get :: D.PeopleMap -> D.Username -> IO D.PeopleMap
 get peopleMap usrName = let 
@@ -55,4 +64,14 @@ get peopleMap usrName = let
         Nothing -> ioError . userError $ ("Persona: " ++ (show usrName) ++ " no existe!")
         Just person -> putStrLn (show person) >> return peopleMap
 
+
+load :: D.PeopleMap -> FilePath -> IO D.PeopleMap
+load peopleMap path = do
+    csvData <- BL.readFile path
+    let values = Csv.decode Csv.NoHeader csvData :: Either String (V.Vector D.PersonTuple)
+    case values of 
+        Left strError -> ioError . userError $ ("Error al leer el archivo: " ++ strError)
+        Right tuples -> do
+            let people = fmap D.tupleToPerson tuples
+            return $ D.addPeopleToMap peopleMap (V.toList people)
 
