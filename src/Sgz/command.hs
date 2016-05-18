@@ -30,23 +30,26 @@ runCommand peopleMap (CommandInput "add" args) = putStrLn ("Agregando: " ++ show
 runCommand peopleMap (CommandInput "get" []) = ioError . userError $ ("No se ingreso nombre de usuario!")
 runCommand peopleMap (CommandInput "get" (usrName:_)) = get peopleMap usrName
 runCommand peopleMap (CommandInput "load" []) = ioError . userError $ ("Se debe ingresar el path del archivo!")
-runCommand peopleMap (CommandInput "load" filePath) = load peopleMap filePath
+runCommand peopleMap (CommandInput "load" (filePath:_)) = load peopleMap filePath
 runCommand peopleMap (CommandInput c _) = ioError . userError $ ("Comando " ++ c ++ " no reconocido!")
 
 
 printMenu :: IO ()
 printMenu = 
-    putStrLn "Bienvenido al registro de personas." >> 
-    putStrLn "Guarde y recupere datos sobre individuos."
+    putStr "\n" >>
+    putStrLn "*---------------------------------------------*" >> 
+    putStrLn "| Bienvenido al registro de personas.         |" >> 
+    putStrLn "| Guarde y recupere datos sobre individuos.   |" >>
+    putStrLn "*---------------------------------------------*\n"
 
 
 help :: IO ()
 help = 
-    putStrLn "Comandos: " >>
-    putStrLn "help: Imprime este menu de ayuda" >> 
-    putStrLn "menu: Imprime el menu principal" >>
-    putStrLn "add: Agregar persona" >> 
-    putStrLn "get: Buscar persona"
+    putStrLn "Comandos\n-------------------------------------------------------- " >>
+    putStrLn "> help: Imprime este menu de ayuda." >> 
+    putStrLn "> add username email fechaNacimiento: Agregar persona." >> 
+    putStrLn "> get username: Buscar persona." >>
+    putStrLn "> load archivo: Carga archivo *.csv.\n"
 
 
 add :: D.PeopleMap -> [CommandArg] -> IO D.PeopleMap
@@ -73,5 +76,7 @@ load peopleMap path = do
         Left strError -> ioError . userError $ ("Error al leer el archivo: " ++ strError)
         Right tuples -> do
             let people = fmap D.tupleToPerson tuples
-            return $ D.addPeopleToMap peopleMap (V.toList people)
+            let peopleList = V.toList people
+            putStrLn $ ("Agregando: " ++ (show peopleList))
+            return $ D.addPeopleToMap peopleMap peopleList
 

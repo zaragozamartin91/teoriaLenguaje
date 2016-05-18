@@ -27,4 +27,4 @@ tupleToPerson (u,e,b) = Person u e b
 
 addPeopleToMap :: PeopleMap -> [Person] -> PeopleMap
 addPeopleToMap peopleMap people = 
-    foldr (\p acc -> Map.insert (username p) p acc) peopleMap peopleMap
+    foldr (\p acc -> Map.insert (username p) p acc) peopleMap people
